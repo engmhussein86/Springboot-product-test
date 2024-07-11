@@ -2,6 +2,7 @@ package com.hackerrank.sample.controller;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -36,8 +37,23 @@ public class SampleController {
 			
 			try {
 				
-			
+
 					ArrayList<FilteredProducts> books = new ArrayList<FilteredProducts>();
+					for (int i=0; i< data.length();i++){
+						int price = data.getJSONObject(i).getInt("price");
+						if(price <= init_price && price >= final_price){
+							FilteredProducts filteredProducts = new FilteredProducts(
+									data.getJSONObject(i).getString("barcode")
+							);
+							books.add(filteredProducts);
+
+						}
+
+					}
+
+					if(books.isEmpty()){
+						return new ResponseEntity<ArrayList<FilteredProducts>>(HttpStatus.BAD_REQUEST);
+					}
 			
 				    return new ResponseEntity<ArrayList<FilteredProducts>>(books, HttpStatus.OK);
 
@@ -60,6 +76,22 @@ public class SampleController {
 			try {
 				
 		         SortedProducts[] ans=new SortedProducts[data.length()];
+//				 ArrayList <SortedProducts> ans = new ArrayList<>();
+
+				for (int i=0; i< data.length();i++){
+					SortedProducts sortedProducts = new SortedProducts(data.getJSONObject(i).getString("barcode"));
+//					ans.add(sortedProducts);
+					ans[i] = sortedProducts;
+
+				 }
+				Arrays.sort(ans,Comparator.comparingInt(product ->{
+					JSONObject p = getProductByBarcode(product.getBarCode());
+					return p.getInt("price");
+				}));
+//				ans.sort(Comparator.comparingInt(product ->{
+//					JSONObject p = getProductByBarcode(product.getBarCode());
+//					return p.getInt("price");
+//				}));
 
 			
 		         
@@ -68,11 +100,21 @@ public class SampleController {
 			    
 			}catch(Exception E)
 				{
-	   	System.out.println("Error encountered : "+E.getMessage());
-	    return new ResponseEntity<SortedProducts[]>(HttpStatus.NOT_FOUND);
+	   	  System.out.println("Error encountered : "+E.getMessage());
+	       return new ResponseEntity<SortedProducts[]>(HttpStatus.NOT_FOUND);
 				}
 			
-		}  
+		}
+
+	private JSONObject getProductByBarcode(String barcode) {
+		for (int i = 0; i < data.length(); i++) {
+			JSONObject product = data.getJSONObject(i);
+			if (product.getString("barcode").equals(barcode)) {
+				return product;
+			}
+		}
+		return null;
+	}
 		
 		
 	
